@@ -1,0 +1,17 @@
+data_prepare/data
+data_prepare/*/data
+data_prepare/*/build
+data_prepare/*/lib
+data_prepare/data_train
+data_prepare/extri*
+data_prepare/intri*
+nerf/tava/data
+nerf/tava/outputs
+nerf/A-NeRF/data
+nerf/A-NeRF/render_output
+nerf/A-NeRF/logs
+nerf/DSNeRF/data*
+**/__pycache__
+**/*.pyc
+**/*.egg-info*
+
