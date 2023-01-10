@@ -27,6 +27,9 @@ Then add `%YAML:1.0` as header for the newly generated yml file so that OpenCV c
 
 Detect hand and face keypoints using OpenPose
 ```bash
-python3 scripts/preprocess/extract_video.py ~/Documents/datasets --openpose ~/Downloads/openpose --handface --ext jpg --with_img --end 1
+python3 scripts/preprocess/extract_video.py ~/Documents/datasets --openpose ~/Downloads/openpose --handface --ext png --with_img --end 1
 ```
 
+```bash
+python3 apps/demo/mv1p.py ~/Documents/datasets --out ~/Documents/datasets/output/smpl --vis_det --vis_repro --undis --vis_smpl --end 1
+```
