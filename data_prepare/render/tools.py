@@ -33,8 +33,8 @@ def delete_objects():
 
 
 def update_camera(camera,
-                  focus_point=mathutils.Vector((0.0, 0.0, 0.0)),
-                  distance=3.0):
+                  focus_point=mathutils.Vector((0.0, 0.0, 0.85)),
+                  distance=4.0):
     """
     Focus the camera to a focus point and place the camera at a specific distance from that
     focus point. The camera stays in a direct line with the focus point.

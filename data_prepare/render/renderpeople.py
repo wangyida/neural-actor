@@ -33,6 +33,7 @@ if __name__ == "__main__":
     parser.add_argument('--end', type=int, default=1, help='ending frame')
     args = parser.parse_args()
 
+    """
     add_light(position=(2, 2, 2), name='light1')
     add_light(position=(2, 1, 2), name='light2')
     add_light(position=(-2, -2, 2), name='light3')
@@ -41,6 +42,7 @@ if __name__ == "__main__":
     add_light(position=(2, -1, 2), name='light6')
     add_light(position=(-2, 2, 2), name='light7')
     add_light(position=(-2, 1, 2), name='light8')
+    """
 
     # NOTE: vanilla Nerf only need a single frame
     bpy.context.scene.frame_start = args.start
@@ -51,7 +53,7 @@ if __name__ == "__main__":
         0].default_value = (0, 0, 0, 0)
 
     human = bpy.context.scene.objects['rp_aliyah_4d_004_dancing']
-    body_shift = 0.85
+    body_shift = 0 # 0.85
     human.location -= mathutils.Vector((0, 0, body_shift))
 
     home_dir = os.path.expanduser('~')
@@ -59,7 +61,7 @@ if __name__ == "__main__":
     bg_scale = 3
     if args.with_bkg:
         ground_shift = bg_scale - body_shift
-        bpy.ops.mesh.primitive_cube_add(size=2 * bg_scale,
+        bpy.ops.mesh.primitive_cube_add(size=2*bg_scale,
                                         enter_editmode=False,
                                         align='WORLD',
                                         location=(0, 0, ground_shift),
@@ -90,9 +92,10 @@ if __name__ == "__main__":
     # optional angles to position camera
     # Larger variance
     interval_x = 20
-    interval_y = 15
+    interval_y = 10
     angle_x = list(range(0, 359, interval_x))
-    angle_y = list(range(-60, 15, interval_y))
+    angle_y = list(range(-50, -9, interval_y))
+    dist_all = list(range(2, 5, 2))
     # Smaller variance
     """
     interval_x = 2
@@ -114,95 +117,96 @@ if __name__ == "__main__":
 
     # Start to go over all camera positions from the initiated position
     pi_2 = math.pi * 2
-    for camid_vert in range(len(angle_y)):
-        for camid_horiz in range(-1, len(angle_x)):
-            if camid_horiz != -1:
-                cam_tag = camid_vert * len(angle_x) + camid_horiz + 1
-                z_factor = math.cos(angle_y[camid_vert] / 360.0 * pi_2)
-                cam_x, cam_y, cam_z = math.cos(
-                    angle_x[camid_horiz] / 360.0 * pi_2) * z_factor, math.sin(
-                        angle_x[camid_horiz] / 360.0 *
-                        pi_2) * z_factor, math.sin(angle_y[camid_vert] /
-                                                   360.0 * pi_2)
+    for dist in range(len(dist_all)):
+        for camid_vert in range(len(angle_y)):
+            for camid_horiz in range(-1, len(angle_x)):
+                if camid_horiz != -1:
+                    cam_tag = dist * len(angle_x) * len(angle_y) + camid_vert * len(angle_x) + camid_horiz + 1
+                    z_factor = math.cos(angle_y[camid_vert] / 360.0 * pi_2)
+                    cam_x, cam_y, cam_z = math.cos(
+                        angle_x[camid_horiz] / 360.0 * pi_2) * z_factor, math.sin(
+                            angle_x[camid_horiz] / 360.0 *
+                            pi_2) * z_factor, math.sin(angle_y[camid_vert] /
+                                                       360.0 * pi_2)
 
-                # reposition the camera towards the target
-                camera.location = mathutils.Vector((cam_x, cam_y, cam_z)) * 3.0
-                camera = update_camera(camera)
+                    # reposition the camera towards the target
+                    camera.location = mathutils.Vector((cam_x, cam_y, cam_z)) * 6.0
+                    camera = update_camera(camera, distance=dist_all[dist])
 
-                # get the camera intrinsic and extrinsic
-                P, K, RT, R, T = get_3x4_P_matrix_from_blender(camera)
-                intri, extri = write_cam_params(intri=intri,
-                                                extri=extri,
-                                                K=K,
-                                                RT=RT,
-                                                R=R,
-                                                T=T,
-                                                cam_loc=camera.location,
-                                                cam_tag=cam_tag)
+                    # get the camera intrinsic and extrinsic
+                    P, K, RT, R, T = get_3x4_P_matrix_from_blender(camera)
+                    intri, extri = write_cam_params(intri=intri,
+                                                    extri=extri,
+                                                    K=K,
+                                                    RT=RT,
+                                                    R=R,
+                                                    T=T,
+                                                    cam_loc=camera.location,
+                                                    cam_tag=cam_tag)
 
-                dg = bpy.context.evaluated_depsgraph_get()
-                dg.update()
+                    dg = bpy.context.evaluated_depsgraph_get()
+                    dg.update()
 
-                if save_videos:
-                    bpy.data.scenes[
-                        "Scene"].render.image_settings.file_format = "FFMPEG"
-                    bpy.context.scene.render.filepath = os.path.join(
-                        home_dir, 'Documents/datasets/videos',
-                        str(cam_tag) + '.mkv')
-                    bpy.ops.render.render(animation=True)
+                    if save_videos:
+                        bpy.data.scenes[
+                            "Scene"].render.image_settings.file_format = "FFMPEG"
+                        bpy.context.scene.render.filepath = os.path.join(
+                            home_dir, 'Documents/datasets/videos',
+                            str(cam_tag) + '.mkv')
+                        bpy.ops.render.render(animation=True)
 
-                if save_images:
-                    # Save RGB images as PNG
-                    output_mask = setup_depth_node(home_dir, format='png')
-                    """
-                    output_mask.base_path = os.path.join(
-                        home_dir, 'Documents/datasets/mask',
-                        str(cam_tag)) + '/'
-                    """
-                    bpy.context.scene.render.filepath = os.path.join(
-                        home_dir, 'Documents/datasets/images',
-                        str(cam_tag))  + '/'
-                    bpy.ops.render.render(animation=True)
-                elif save_depth:
-                    # Save real depth images (mm) as EXR
-                    output_depth = setup_depth_node(home_dir, format='exr')
-                    output_depth.base_path = os.path.join(
-                        home_dir, 'Documents/datasets/depth',
-                        str(cam_tag)) + '/'
-                    bpy.ops.render.render(animation=True)
-            else:
-                z_factor = math.cos(angle_y[camid_vert] / 360.0 * pi_2)
-                cam_x, cam_y, cam_z = math.cos(
-                    (angle_x[0] - interval_x) / 360.0 *
-                    pi_2) * z_factor, math.sin(
+                    if save_images:
+                        # Save RGB images as PNG
+                        output_mask = setup_depth_node(home_dir, format='png')
+                        """
+                        output_mask.base_path = os.path.join(
+                            home_dir, 'Documents/datasets/mask',
+                            str(cam_tag)) + '/'
+                        """
+                        bpy.context.scene.render.filepath = os.path.join(
+                            home_dir, 'Documents/datasets/images',
+                            str(cam_tag))  + '/'
+                        bpy.ops.render.render(animation=True)
+                    elif save_depth:
+                        # Save real depth images (mm) as EXR
+                        output_depth = setup_depth_node(home_dir, format='exr')
+                        output_depth.base_path = os.path.join(
+                            home_dir, 'Documents/datasets/depth',
+                            str(cam_tag)) + '/'
+                        bpy.ops.render.render(animation=True)
+                else:
+                    z_factor = math.cos(angle_y[camid_vert] / 360.0 * pi_2)
+                    cam_x, cam_y, cam_z = math.cos(
                         (angle_x[0] - interval_x) / 360.0 *
-                        pi_2) * z_factor, math.sin(angle_y[camid_vert] /
-                                                   360.0 * pi_2)
+                        pi_2) * z_factor, math.sin(
+                            (angle_x[0] - interval_x) / 360.0 *
+                            pi_2) * z_factor, math.sin(angle_y[camid_vert] /
+                                                       360.0 * pi_2)
 
-                # reposition the camera towards the target
-                camera.location = mathutils.Vector((cam_x, cam_y, cam_z))
-                # reposition the camera towards the target
-                camera = update_camera(camera)
-                # get the camera intrinsic and extrinsic
-                P, K, RT, R, T = get_3x4_P_matrix_from_blender(camera)
-                dg = bpy.context.evaluated_depsgraph_get()
-                dg.update()
+                    # reposition the camera towards the target
+                    camera.location = mathutils.Vector((cam_x, cam_y, cam_z))
+                    # reposition the camera towards the target
+                    camera = update_camera(camera, distance=dist_all[dist])
+                    # get the camera intrinsic and extrinsic
+                    P, K, RT, R, T = get_3x4_P_matrix_from_blender(camera)
+                    dg = bpy.context.evaluated_depsgraph_get()
+                    dg.update()
 
-                cam_x, cam_y, cam_z = math.cos(
-                    (angle_x[0] - interval_x) / 360.0 *
-                    pi_2) * z_factor, math.sin(
+                    cam_x, cam_y, cam_z = math.cos(
                         (angle_x[0] - interval_x) / 360.0 *
-                        pi_2) * z_factor, math.sin(angle_y[camid_vert] /
-                                                   360.0 * pi_2)
+                        pi_2) * z_factor, math.sin(
+                            (angle_x[0] - interval_x) / 360.0 *
+                            pi_2) * z_factor, math.sin(angle_y[camid_vert] /
+                                                       360.0 * pi_2)
 
-                # reposition the camera towards the target
-                camera.location = mathutils.Vector((cam_x, cam_y, cam_z))
-                # reposition the camera towards the target
-                camera = update_camera(camera)
-                # get the camera intrinsic and extrinsic
-                P, K, RT, R, T = get_3x4_P_matrix_from_blender(camera)
-                dg = bpy.context.evaluated_depsgraph_get()
-                dg.update()
+                    # reposition the camera towards the target
+                    camera.location = mathutils.Vector((cam_x, cam_y, cam_z))
+                    # reposition the camera towards the target
+                    camera = update_camera(camera)
+                    # get the camera intrinsic and extrinsic
+                    P, K, RT, R, T = get_3x4_P_matrix_from_blender(camera)
+                    dg = bpy.context.evaluated_depsgraph_get()
+                    dg.update()
 
     # save intrinsics and extrinsics
     fname_in = os.path.join(home_dir, 'Documents/datasets/intri.json')

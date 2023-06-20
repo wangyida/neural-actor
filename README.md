@@ -1,10 +1,17 @@
 ## Setup
 
-Notice that working on Nvidia 3090 requires certain pytorch and torchvision versions
+Notice that working on NVidia 3090 requires certain pytorch and torchvision versions
+
 
 ```bash
 pip install torch==1.11.0 torchvision==0.12.0 torchaudio==0.11.0 --extra-index-url https://download.pytorch.org/whl/cu113
 ```
+Or download the wheel and install with in case pytorch site is not included in the pip source
+```bash
+pip install torch-1.11.0+cu113-cp37-cp37m-linux_x86_64.whl
+```
+
+As for *COLMAP*, version 3.8 (the lastest in early 2023) has problen with CUDA 11.X, version 3.7 fits the best for SIFT feature extraction and matching with CUDA.https://github.com/colmap/colmap/tree/3.7
 
 ### Blender
 

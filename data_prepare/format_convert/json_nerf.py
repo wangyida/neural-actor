@@ -5,19 +5,6 @@ import numpy as np
 from os.path import join
 from tqdm import tqdm
 
-def json2yml(prefix, path, mode):
-    f_json = open(join(path, prefix + '.json'), 'r')
-    jsonData = json.load(f_json)
-    f_json.close()
-
-    f_yml = open(join(path, prefix + '.yml'), 'w+')
-    if mode == 'opencv':
-        ruamel.yaml.safe_dump(jsonData, f_yml, indent=3)
-    else:
-        # NOTE: the other yaml format which does not fitting OpenCV's loader
-        import yaml
-        yaml.dump(jsonData, f_yml)
-
 def nerf_format(intri, extri, path, mode):
     # Data to be written
     # NOTE as posted in https://github.com/yenchenlin/nerf-pytorch/issues/41
@@ -31,9 +18,14 @@ def nerf_format(intri, extri, path, mode):
     0    f_y  c_y
     0    0    1
     """
-    image_width = jsonData[1]['K_1']['data'][2] * 2
-    focal = jsonData[1]['K_1']['data'][0]
-    camera_angle_x = np.arctan((0.5 * image_width) / focal) / 0.5
+    c_x = jsonData[1]['K_1']['data'][2]
+    c_y = jsonData[1]['K_1']['data'][5]
+    image_width = c_x * 2
+    image_height = c_y * 2
+    focal_w = jsonData[1]['K_1']['data'][0]
+    focal_h = jsonData[1]['K_1']['data'][4]
+    camera_angle_x = np.arctan((0.5 * image_width) / focal_w) / 0.5
+    camera_angle_y = np.arctan((0.5 * image_height) / focal_h) / 0.5
 
     f_extri = open(join(path, extri + '.json'), 'r')
     jsonData = json.load(f_extri)
@@ -41,6 +33,13 @@ def nerf_format(intri, extri, path, mode):
 
     dictionary = {
 	"camera_angle_x": camera_angle_x,
+	"camera_angle_y": camera_angle_y,
+        "fl_x": focal_w,
+        "fl_y": focal_h,
+        "c_x": c_x,
+        "c_y": c_y,
+        "w": image_width,
+        "h": image_height,
 	"frames": []
     }
     for i in tqdm(range(0, len(jsonData), 3)):
@@ -68,7 +67,7 @@ def nerf_format(intri, extri, path, mode):
     json_object = json.dumps(dictionary, indent=4)
      
     # Writing to sample.json
-    with open("transforms_train.json", "w") as outfile:
+    with open(join(path, "transforms.json"), "w") as outfile:
         outfile.write(json_object)
 
 
@@ -80,10 +79,4 @@ if __name__ == "__main__":
 
     path = args.path
     mode = args.mode
-    """
-    # converting camera extrinsics from json to yml 
-    json2yml('extri', path=args.path, mode=args.mode)
-    # converting camera intrinsics from json to yml 
-    json2yml('intri', path=args.path, mode=args.mode)    
-    """
     nerf_format('intri', 'extri', path=args.path, mode=args.mode)

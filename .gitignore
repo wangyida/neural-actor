@@ -15,3 +15,4 @@ nerf/DSNeRF/data*
 **/*.pyc
 **/*.egg-info*
 
+data_prepare/format_convert/xml2txt.py

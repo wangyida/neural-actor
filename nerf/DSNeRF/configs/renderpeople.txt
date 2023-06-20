@@ -1,6 +1,6 @@
 expname = renderpeople
-basedir = ./logs/rp_2v
-datadir = ./data_rp_2v
+basedir = ./logs/rp
+datadir = ./data_rp
 dataset_type = llff
 factor = 4
 llffhold = 8
