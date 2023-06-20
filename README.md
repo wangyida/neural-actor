@@ -1,3 +1,20 @@
+## Rendering, Animating and Meshing Actors with NeRF
+A library for rendering neural actors, and benchmarking dynamic NeRF
+
+### Examplar
+
+#### Point Cloud Completion
+![](readmes/na1.gif)
+
+#### Neural Rendering
+![](readmes/na2.gif)
+
+#### Dynamic Meshing
+![](readmes/na3.gif)
+
+#### SMPL Fitting
+![](readmes/na4.gif)
+
 ## Setup
 
 Notice that working on NVidia 3090 requires certain pytorch and torchvision versions
@@ -39,4 +56,14 @@ python3 scripts/preprocess/extract_video.py ~/Documents/datasets --openpose ~/Do
 
 ```bash
 python3 apps/demo/mv1p.py ~/Documents/datasets --out ~/Documents/datasets/output/smpl --vis_det --vis_repro --undis --vis_smpl --end 1
+```
+
+### Citation
+```
+@misc{rama2023wang,
+Author = {Yida Wang},
+Year = {2023},
+Note = {https://github.com/wangyida/neural-actor},
+Title = {Rendering, Animating and Meshing Actors with NeRF}
+}
 ```
